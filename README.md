@@ -22,7 +22,7 @@ The strongest interpretation supported by the experiments is **not** that pneumo
 
 ## Experimental design
 
-The public workflow includes:
+The full research workspace in Drive includes:
 
 1. dataset availability and integrity auditing;
 2. a formal label ontology across source datasets;
@@ -34,6 +34,8 @@ The public workflow includes:
 8. CheXpert semantic-alignment analysis;
 9. calibration and high-confidence error analysis;
 10. semantic/provenance/shortcut auditing.
+
+The GitHub repository contains a cleaned, reusable implementation of the core modeling and transport-evaluation stages rather than dumping the full exploratory Colab history.
 
 ### Source tasks
 
@@ -59,12 +61,57 @@ The study emphasizes metrics that directly address transport reliability:
 
 AUPRC is not treated as a primary cross-dataset claim on highly imbalanced CheXpert targets.
 
+## Clean public implementation
+
+```text
+src/
+├── train_source.py        # DenseNet-121, five seeds, source train/validation
+├── evaluate_transfer.py   # target evaluation, AUROC, calibration, HCER
+└── operating_points.py    # select thresholds on source validation only and transfer unchanged
+```
+
+### Example: train one source task
+
+```bash
+python src/train_source.py \
+  --split-csv /path/to/kaggle_pneumonia_splits.csv \
+  --source-task Kaggle_Pneumonia \
+  --output-dir ./runs
+```
+
+Defaults reproduce the research protocol: DenseNet-121 with ImageNet initialization; seeds `42 1337 2025 7 99`; 224×224 images; batch size 32; AdamW; learning rate `1e-4`; weight decay `1e-4`; five maximum epochs; early-stopping patience 3.
+
+### Example: transport to a target dataset
+
+```bash
+python src/evaluate_transfer.py \
+  --checkpoint ./runs/Kaggle_Pneumonia/seed_42/best_checkpoint.pt \
+  --target-csv /path/to/rsna_lungopacity_splits.csv \
+  --subset test \
+  --source-task Kaggle_Pneumonia \
+  --target-task RSNA_LungOpacity \
+  --output-prefix ./transfer/kaggle_to_rsna_seed42
+```
+
+### Example: transfer a source-selected operating point
+
+```bash
+python src/operating_points.py \
+  --source-validation ./runs/Kaggle_Pneumonia/seed_42/val_predictions.csv \
+  --target-predictions ./transfer/kaggle_to_rsna_seed42_predictions.csv \
+  --output ./transfer/kaggle_to_rsna_seed42_operating_points.csv
+```
+
+The threshold policies are selected using **source validation labels only** and then applied unchanged to the target predictions.
+
 ## Repository structure
 
 ```text
 .
-├── notebooks/
-│   └── Same_Label_Different_Disease.ipynb
+├── src/
+│   ├── train_source.py
+│   ├── evaluate_transfer.py
+│   └── operating_points.py
 ├── RESULTS.md
 ├── REPRODUCIBILITY.md
 ├── DATA_AND_LABELS.md
@@ -73,11 +120,11 @@ AUPRC is not treated as a primary cross-dataset claim on highly imbalanced CheXp
 └── README.md
 ```
 
-The notebook has cached outputs, execution counts, and manuscript-writing/transfer-package cells removed. The public version ends at the scientific audit stages.
+The unpublished manuscript-writing package, cached notebook outputs, model checkpoints, and raw medical-image datasets are intentionally not published here.
 
-## Datasets
+## Data
 
-Raw chest X-ray datasets are **not** redistributed in this repository. Users must obtain each dataset from its official source and comply with the corresponding terms of use. See [`DATA_AND_LABELS.md`](DATA_AND_LABELS.md).
+Raw chest X-ray datasets are **not** redistributed. Users must obtain each dataset from its official source and comply with its terms. See [`DATA_AND_LABELS.md`](DATA_AND_LABELS.md).
 
 ## Research status
 
