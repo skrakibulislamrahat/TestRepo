@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this research code, please cite the repository and the associated paper once stable publication metadata is available."
+title: "Same Label, Different Disease: Semantic Transport Failure Across Chest X-ray Benchmarks"
+type: software
+authors:
+  - family-names: "Rahat"
+    given-names: "SK Rakib Ul Islam"
+    orcid: "https://orcid.org/0009-0005-0744-8398"
+repository-code: "https://github.com/skrakibulislamrahat/TestRepo"
+url: "https://github.com/skrakibulislamrahat/TestRepo"
+abstract: "Research workflow for evaluating semantic transport, calibration, operating-point transfer, and high-confidence failure across pneumonia and lung-opacity chest X-ray benchmarks."
+keywords:
+  - trustworthy AI
+  - medical imaging
+  - chest X-ray
+  - dataset shift
+  - semantic shift
+  - calibration
+  - high-confidence error
