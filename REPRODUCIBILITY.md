@@ -2,7 +2,17 @@
 
 ## Public workflow
 
-The notebook `notebooks/Same_Label_Different_Disease.ipynb` contains the research pipeline through Phase 9:
+The original research was developed as a phased Google Colab workflow. The GitHub version deliberately converts the core modeling/evaluation logic into normal Python scripts instead of publishing the entire exploratory notebook history.
+
+Public implementation:
+
+```text
+src/train_source.py
+src/evaluate_transfer.py
+src/operating_points.py
+```
+
+The full experimental workspace covered:
 
 1. path/data audit;
 2. dataset integrity audit;
@@ -16,72 +26,81 @@ The notebook `notebooks/Same_Label_Different_Disease.ipynb` contains the researc
 10. calibration/high-confidence failure analysis;
 11. semantic/provenance/shortcut audit.
 
-Manuscript-assembly and manuscript-transfer cells from the working notebook are intentionally excluded from the public version.
+Manuscript assembly, writing prompts, transfer packages, cached notebook outputs, and one-off recovery cells are intentionally excluded from GitHub.
 
 ## Environment
 
-The original experiments were executed in Google Colab with GPU acceleration. The public notebook uses standard Python/PyTorch packages plus Colab Drive mounting. Install the core dependencies with:
+The original experiments were executed in Google Colab with GPU acceleration. The public scripts use standard Python/PyTorch packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Project root
+A CUDA-capable GPU is recommended for training but the evaluation utilities also support CPU execution.
 
-The notebook defaults to the original Colab location:
+## Required split/manifest format
 
-```text
-/content/drive/MyDrive/KJR_Pneumonia_Semantic_Transport_Project
-```
-
-For a different location, set the environment variable before running cells:
-
-```python
-import os
-os.environ["PROJECT_ROOT"] = "/your/project/root"
-```
-
-The public notebook resolves `PROJECT_ROOT` through this variable where the working notebook originally used the fixed Colab path.
-
-## Datasets
-
-The raw datasets are not part of this repository. Obtain Kaggle Chest X-Ray Pneumonia, RSNA Pneumonia Detection Challenge data, and CheXpert from their official sources. The Phase 0/1 cells audit the supplied locations before later stages execute.
-
-## Random seeds
-
-The training workflow evaluates multiple independent seeds:
+`src/train_source.py` expects a leakage-safe CSV containing:
 
 ```text
-42, 1337, 2025, 7, 99
+image_id,image_path,label,split,split_group_id
 ```
 
-Seedwise results are retained before aggregation so cross-dataset conclusions are not based on a single training run.
+`split` must contain `train` and `val` rows. `split_group_id` should identify the patient/study grouping used to prevent leakage when the source dataset provides such grouping information.
+
+`src/evaluate_transfer.py` expects at least:
+
+```text
+image_id,image_path,label
+```
+
+Use `--subset test` when evaluating a split CSV with a held-out test subset.
+
+## Locked training protocol
+
+The research workflow used:
+
+- DenseNet-121;
+- ImageNet initialization;
+- image size 224×224;
+- batch size 32;
+- AdamW;
+- learning rate `1e-4`;
+- weight decay `1e-4`;
+- maximum 5 epochs;
+- early-stopping patience 3;
+- random seeds `42, 1337, 2025, 7, 99`.
+
+The generalized training script uses these values as defaults.
 
 ## Evaluation discipline
 
-For transferred operating points, thresholds are selected using source validation predictions only. Target labels are used for evaluation, not threshold selection. This prevents target-set adaptation from being hidden inside the reported transfer results.
+For transferred operating points, thresholds are selected using **source validation predictions only**. The chosen threshold is then applied unchanged to the target predictions. Target labels are used for evaluation, not threshold optimization.
 
-Primary reporting uses:
+`src/operating_points.py` implements four source-side policies:
+
+- fixed 0.5;
+- maximum Youden index;
+- maximum F1;
+- sensitivity ≥ 0.90 with maximum specificity, when available.
+
+Primary cross-dataset reporting emphasizes:
 
 - AUROC;
 - balanced accuracy;
 - ECE with 15 bins;
-- high-confidence error rate at confidence ≥ 0.90;
+- Brier score;
+- high-confidence error at confidence ≥ 0.90;
 - source-validation operating-point transfer.
 
-## Expected output organization
+## Random-seed reporting
 
-The working pipeline creates project subdirectories for configuration, dataset audits, label ontology, manifests, splits, models/checkpoints, predictions, metrics, figures/tables, and logs. Large outputs/checkpoints should remain outside Git unless there is a clear reason to version them.
+Run all five seeds for each source task. Retain seedwise predictions and metrics before calculating aggregate summaries. Do not report a single favorable seed as the project result.
 
-## Public-notebook cleaning
+## Data and checkpoints
 
-To make the research artifact readable and safe to publish, the GitHub copy has:
+Raw medical images and large trained checkpoints should remain outside Git. Obtain datasets from their official providers and preserve dataset/version information in the local experiment record.
 
-- cached notebook outputs removed;
-- execution counts removed;
-- volatile Colab metadata removed;
-- duplicate experimental cell removed;
-- one-off extraction-repair cell omitted;
-- manuscript-writing and transfer-package stages omitted.
+## Result integrity
 
-The scientific analysis code itself is retained through the final semantic/provenance audit.
+The numeric claims in [`RESULTS.md`](RESULTS.md) are copied from the finalized project result summary. Do not replace them with numbers from intermediate experiments without documenting a new experiment version and regenerating the full evaluation matrix.
