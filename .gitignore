@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Notebooks / caches
+.ipynb_checkpoints/
+.cache/
+
+# Medical image datasets / archives
+*.dcm
+*.dicom
+*.zip
+*.tar
+*.tar.gz
+*.7z
+/data/
+/datasets/
+
+# Large model artifacts
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.keras
+/checkpoints/
+/runs/
+
+# Local outputs
+/transfer/
+/outputs/
+*.log
+
+# Secrets / local config
+.env
+.env.*
