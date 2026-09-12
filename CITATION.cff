@@ -6,8 +6,8 @@ authors:
   - family-names: "Rahat"
     given-names: "SK Rakib Ul Islam"
     orcid: "https://orcid.org/0009-0005-0744-8398"
-repository-code: "https://github.com/skrakibulislamrahat/TestRepo"
-url: "https://github.com/skrakibulislamrahat/TestRepo"
+repository-code: "https://github.com/skrakibulislamrahat/semantic-shift-chest-xray"
+url: "https://github.com/skrakibulislamrahat/semantic-shift-chest-xray"
 abstract: "Research workflow for evaluating semantic transport, calibration, operating-point transfer, and high-confidence failure across pneumonia and lung-opacity chest X-ray benchmarks."
 keywords:
   - trustworthy AI
