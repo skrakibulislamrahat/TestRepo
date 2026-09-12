@@ -1,5 +1,7 @@
 # Same Label, Different Disease
 
+> **Research hub:** [Portfolio view](https://skrakibulislamrahat.github.io/#project-semantic-shift) · [Reproducibility guide](REPRODUCIBILITY.md) · [Validated results](RESULTS.md) · [Citation metadata](CITATION.cff)
+
 ## Semantic transport failure in pneumonia and lung-opacity classification across chest X-ray benchmarks
 
 This repository contains a reliability-focused medical-imaging study asking a simple but important question:
